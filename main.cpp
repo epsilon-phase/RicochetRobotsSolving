@@ -3,8 +3,58 @@
 #include <cassert>
 #include <cstdlib>
 #include <fstream>
-#include "Graph.h"
+//#include "Graph.h"
 #include "board.h"
+
+using namespace std;
+struct command
+{
+  char robot;
+  unsigned short dir;
+}typedef command;
+command last;
+
+bool
+findPath(const Board &c, vector<command> &path, int depth)
+{
+  Board temp = c;
+  if (c.getGoalRobot() == -1)
+    for (int i = 0; i < c.numRobots(); i++)
+      {
+        if (c.getRobotPosition(i) == c.getGoal())
+          {
+//            temp.print();
+            return true;
+          }
+      }
+  else if (c.getRobotPosition(c.getGoalRobot()) == c.getGoal())
+    return true;
+  if (depth != 0)
+    {
+
+      for (unsigned int i = 0; i < c.numRobots(); i++)
+        {
+          for (unsigned short d = 0; d < 4; d++)
+            {
+              temp = c;
+              command tq;
+
+              tq.dir = d;
+              tq.robot = c.getRobot(i);
+              if (temp.moveRobot(i, d))
+                if (findPath(temp, path, depth - 1))
+                  {
+//                    temp.print();
+                    path.push_back(tq);
+                    return true;
+                  }
+
+            }
+
+        }
+    }
+  return false;
+}
 
 // ================================================================
 // ================================================================
@@ -98,11 +148,11 @@ load(const std::string &executable, const std::string &filename)
 int
 main(int argc, char* argv[])
 {
-  white::Node g;
-  g.Robots.push_back(Position(22, 133));
-  g.Robots.push_back(Position(24, 122));
-  g.edges.push_back(new white::Node());
-  std::cout << std::hex << g.hash() << std::endl;
+//  white::Node g;
+//  g.Robots.push_back(Position(22, 133));
+//  g.Robots.push_back(Position(24, 122));
+//  g.edges.push_back(new white::Node());
+//  std::cout << std::hex << g.hash() << std::endl;
   // There must be at least one command line argument, the input puzzle file
   if (argc < 2)
     {
@@ -159,7 +209,30 @@ main(int argc, char* argv[])
   //
 
   // for now...  an example of how to use the board print function
- board.print();
+  vector<command> d;
+  board.print();
+  findPath(board, d, 12);
+
+  for (int i = d.size(); i >= 0; i--)
+    {
+      std::cout << d[i].robot << ":";
+      switch (d[i].dir)
+        {
+      case 0:
+        std::cout << "North";
+        break;
+      case 1:
+        std::cout << "East";
+        break;
+      case 2:
+        std::cout << "South";
+        break;
+      case 3:
+        std::cout << "West";
+        break;
+        }
+      std::cout << std::endl;
+    }
 
 }
 

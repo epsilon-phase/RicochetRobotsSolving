@@ -109,7 +109,8 @@ public:
   // move an existing robot
   bool
   moveRobot(int i, const std::string &direction);
-
+  bool
+  moveRobot(int i, unsigned short direction);
   // MODIFIER related to the puzzle goal
   void
   setGoal(const std::string &goal_robot, const Position &p);
@@ -129,8 +130,7 @@ private:
   getspot(const Position &p) const;
   void
   setspot(const Position &p, char a);
-  bool
-  moveRobot(int i, unsigned short direction);
+
   bool
   isPositionFilledByRobot(const Position&) const;
 

@@ -217,7 +217,9 @@ Board::moveRobot(int i, const std::string &direction)
   if (direction == "south")
     return moveRobot(i, 2);
   if (direction == "west")
-    return moveRobot(i, 3);
+    return moveRobot(i, 3); //the direction is not valid, therefore, the robot did not move
+  else
+    return false;
 }
 
 // ===================
@@ -340,7 +342,7 @@ Board::print()
 bool
 Board::isPositionFilledByRobot(const Position& c) const
 {
-  for (int i = 0; i < this->robot_positions.size(); i++)
+  for (unsigned int i = 0; i < this->robot_positions.size(); i++)
     {
       if (robot_positions[i] == c)
         {
@@ -362,15 +364,17 @@ Board::moveRobot(int d, unsigned short dir)
   case 0:
 
     //check if top of board is above.
-    if (c.row > 1)
+    if (c.row > 1 && !getHorizontalWall(c.row - .5, c.col)
+        && !this->isPositionFilledByRobot(Position(c.row - 1, c.col)))
       {
         for (int i = c.row; 0 < i; i--)
           {
-            if (this->getHorizontalWall(i + 0.5, c.col)
-                || this->getHorizontalWall(i - 0.5, c.col)
-                || isPositionFilledByRobot(Position(i + 1, c.col)) || i == 1)
+            if (this->getHorizontalWall(i - 0.5, c.col)
+                || isPositionFilledByRobot(Position(i - 1, c.col)) || i == 1)
               {
+                this->setspot(robot_positions[d], ' ');
                 this->robot_positions[d].row = i;
+                this->setspot(robot_positions[d], robots[d]);
                 break;
               }
           }
@@ -378,18 +382,21 @@ Board::moveRobot(int d, unsigned short dir)
     else
       moved = false;
     break;
-    //move east;
   case 2:
     //move south
-    if (c.row < this->getRows())
+    if (c.row < this->getRows() && !getHorizontalWall(c.row + .5, c.col)
+        && !this->isPositionFilledByRobot(Position(c.row + 1, c.col)))
       {
-        for (int i = c.row; 0 < i; i++)
+        for (int i = c.row; i <= getRows(); i++)
           {
             if (this->getHorizontalWall(i + 0.5, c.col)
-                || i == this->getRows() - 1
-                || isPositionFilledByRobot(Position(c.row, i + 1)))
+                || isPositionFilledByRobot(Position(i + 1, c.col))
+                || i == getRows())
               {
+
+                setspot(robot_positions[d], ' ');
                 this->robot_positions[d].row = i;
+                this->setspot(robot_positions[d], robots[d]);
                 break;
               }
           }
@@ -398,40 +405,51 @@ Board::moveRobot(int d, unsigned short dir)
       moved = false;
 
     break;
-    //move east
+
   case 1:
-    if (c.col < getRows())
+    //move east
+    if (c.col < getCols() && !this->getVerticalWall(c.row, c.col + .5)
+        && !isPositionFilledByRobot(Position(c.row, c.col + 1)))
       {
-        for (int i = c.col; i < getRows(); i++)
+        for (int i = c.col; i <= getCols(); i++)
           if (this->getVerticalWall(c.row, i + 0.5)
               || this->isPositionFilledByRobot(Position(c.row, i + 1))
-              || i == this->getRows())
+              || i == this->getCols())
             {
+              setspot(robot_positions[d], ' ');
               this->robot_positions[d].col = i;
+              this->setspot(robot_positions[d], robots[d]);
               break;
             }
       }
     else
       moved = false;
     break;
+    //move west
   case 3:
-    if (c.col > 1)
+    if (c.col > 1 && !this->getVerticalWall(c.row, c.col - .5)
+        && !isPositionFilledByRobot(Position(c.row, c.col - 1)))
       {
-        for (int i = c.col; i > 0; i--)
+        for (int i = c.col; 0 < i; i--)
           {
             if (this->getVerticalWall(c.row, i - 0.5)
                 || isPositionFilledByRobot(Position(c.row, i - 1)) || i == 1)
               {
-                this->robot_positions[d] = i;
+                setspot(robot_positions[d], ' ');
+                this->robot_positions[d].col = i;
+                this->setspot(robot_positions[d], robots[d]);
                 break;
               }
+
           }
+
       }
     else
       moved = false;
 
     break;
     }
+
   return moved;
 }
 // ==================================================================

@@ -5,7 +5,7 @@
 #include <fstream>
 //#include "Graph.h"
 #include "board.h"
-
+#include <limits>
 using namespace std;
 struct command
 {
@@ -13,7 +13,7 @@ struct command
   unsigned short dir;
 }typedef command;
 command last;
-
+//TODO fix so that unconstrained max depth does not cause program to attempt to create an infinite path to the goal.
 bool
 findPath(const Board &c, vector<command> &path, int depth)
 {
@@ -55,7 +55,9 @@ findPath(const Board &c, vector<command> &path, int depth)
     }
   return false;
 }
-
+void
+getAccessibility(const Board& f, vector<vector<unsigned int> > &h,
+    unsigned int maxdepth, unsigned int curdepth = 0);
 // ================================================================
 // ================================================================
 // This function is called if there was an error with the command line arguments
@@ -211,7 +213,7 @@ main(int argc, char* argv[])
   // for now...  an example of how to use the board print function
   vector<command> d;
   board.print();
-  findPath(board, d, 12);
+  findPath(board, d, max_moves);
 
   for (int i = d.size(); i >= 0; i--)
     {
@@ -235,6 +237,47 @@ main(int argc, char* argv[])
     }
 
 }
+void
+getAccessibility(const Board& f, vector<vector<unsigned int> > &h,
+    unsigned int maxdepth, unsigned int curdepth)
+{
+  //Initialize the vector to the correct size
+  if (curdepth == 0)
+    {
+      h.resize(f.getRows());
+      for (unsigned int c = 0; c < f.getRows(); c++)
+        {
+          h[c].resize(f.getCols());
+          //using a reference should reduce the number of calls to operator[] by about 2*n
+          vector<unsigned int> &reffy = h[c];
+          //initialize inner vector
+          for (unsigned int g = 0; g < h[c].size(); g++)
+            reffy[g] = std::numeric_limits<unsigned int>::max();
+        }
+    }
+  if (curdepth < maxdepth)
+    {
 
+      for (unsigned int g = 0; g < f.numRobots(); g++)
+        {
+
+          for (unsigned short c = 0; c < 4; c++)
+            {  //copy to a temporary variable
+              //needs to happen in order to explore the movement spaces of the robots properly
+              Board temp = f;
+              if (temp.canMoveRobot(g, c))
+                {
+                  temp.moveRobot(g, c);
+                  getAccessibility(temp, h, maxdepth, curdepth + 1);
+                  Position curbot = temp.getRobotPosition(g);
+                  //if the position is found with a smaller bot,
+                  if (h[curbot.row][curbot.col] > curdepth)
+                    h[curbot.row][curbot.col] = curdepth;
+                }
+            }
+        }
+    }
+
+}
 // ================================================================
 // ================================================================

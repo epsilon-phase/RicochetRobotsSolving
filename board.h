@@ -123,6 +123,7 @@ public:
   {
     return robot_positions;
   }
+  bool canMoveRobot(unsigned int i, unsigned short direction)const;
 private:
 
   // private helper functions

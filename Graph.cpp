@@ -70,7 +70,7 @@ namespace white
 
   Graph::~Graph()
   {
-// TODO Auto-generated destructor stub
+
   }
   void Graph::PopulateNodes(const Board& i,unsigned int depth){
 

@@ -351,7 +351,30 @@ Board::isPositionFilledByRobot(const Position& c) const
     }
   return false;
 }
+bool
+Board::canMoveRobot(unsigned int i, unsigned short direction) const
+{
+  Position c = robot_positions[i];
+  switch (direction)
+    {
+  case 0:
+    return c.row > 1 && !getHorizontalWall(c.row - .5, c.col)
+        && !this->isPositionFilledByRobot(Position(c.row - 1, c.col));
 
+  case 1:
+    return c.row < this->getRows() && !getHorizontalWall(c.row + .5, c.col)
+        && !this->isPositionFilledByRobot(Position(c.row + 1, c.col));
+
+  case 2:
+    return c.col < getCols() && !this->getVerticalWall(c.row, c.col + .5)
+        && !isPositionFilledByRobot(Position(c.row, c.col + 1));
+  case 3:
+    return c.col > 1 && !this->getVerticalWall(c.row, c.col - .5)
+        && !isPositionFilledByRobot(Position(c.row, c.col - 1));
+  default:
+    return false;
+    }
+}
 //Simplifying the handling into a switch is nice.
 bool
 Board::moveRobot(int d, unsigned short dir)

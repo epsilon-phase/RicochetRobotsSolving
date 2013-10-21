@@ -24,7 +24,7 @@ namespace white
       expansionfactor(expansion), msize(capacity), mdata((node**) 0), needsresize(
           false)
   {
-    // TODO Auto-generated constructor stub
+
 
   }
 

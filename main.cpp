@@ -7,19 +7,21 @@
 #include "board.h"
 #include <limits>
 using namespace std;
-struct command
-{
-  char robot;
-  unsigned short dir;
-}typedef command;
-command last;
+#include "pathfinding.h"
+#include "command.h"
 //TODO fix so that unconstrained max depth does not cause program to attempt to create an infinite path to the goal.
+
+//silly algorithm. Fails to find shortest path answer consistently.
 bool
-findPath(const Board &c, vector<command> &path, int depth)
+findPath(const Board &c, std::vector<command> &path, int depth)
 {
+  //due to the algorithm's incorrect handling of infinite allowable depth,
+  //I see no reason not to make a ridiculously high limit.
+  if (depth == -1)
+    depth = c.getCols() * c.getRows();
   Board temp = c;
   if (c.getGoalRobot() == -1)
-    for (int i = 0; i < c.numRobots(); i++)
+    for (unsigned int i = 0; i < c.numRobots(); i++)
       {
         if (c.getRobotPosition(i) == c.getGoal())
           {
@@ -37,15 +39,12 @@ findPath(const Board &c, vector<command> &path, int depth)
           for (unsigned short d = 0; d < 4; d++)
             {
               temp = c;
-              command tq;
 
-              tq.dir = d;
-              tq.robot = c.getRobot(i);
               if (temp.moveRobot(i, d))
                 if (findPath(temp, path, depth - 1))
                   {
 //                    temp.print();
-                    path.push_back(tq);
+                    path.push_back(command(c.getRobot(i), d));
                     return true;
                   }
 
@@ -55,9 +54,10 @@ findPath(const Board &c, vector<command> &path, int depth)
     }
   return false;
 }
+
 void
-getAccessibility(const Board& f, vector<vector<unsigned int> > &h,
-    unsigned int maxdepth, unsigned int curdepth = 0);
+getAccessibility(const Board& f, vector<vector<int> > &h, unsigned int maxdepth,
+    unsigned int curdepth = 0);
 // ================================================================
 // ================================================================
 // This function is called if there was an error with the command line arguments
@@ -143,6 +143,8 @@ load(const std::string &executable, const std::string &filename)
   // return the initialized board
   return answer;
 }
+void
+printAccessibility(const vector<vector<int> > &y);
 
 // ================================================================
 // ================================================================
@@ -150,11 +152,7 @@ load(const std::string &executable, const std::string &filename)
 int
 main(int argc, char* argv[])
 {
-//  white::Node g;
-//  g.Robots.push_back(Position(22, 133));
-//  g.Robots.push_back(Position(24, 122));
-//  g.edges.push_back(new white::Node());
-//  std::cout << std::hex << g.hash() << std::endl;
+
   // There must be at least one command line argument, the input puzzle file
   if (argc < 2)
     {
@@ -209,37 +207,44 @@ main(int argc, char* argv[])
   // YOUR CODE STARTS HERE
   //
   //
-
-  // for now...  an example of how to use the board print function
-  vector<command> d;
-  board.print();
-  findPath(board, d, max_moves);
-
-  for (int i = d.size(); i >= 0; i--)
+  if (!visualize_accessibility)
     {
-      std::cout << d[i].robot << ":";
-      switch (d[i].dir)
-        {
-      case 0:
-        std::cout << "North";
-        break;
-      case 1:
-        std::cout << "East";
-        break;
-      case 2:
-        std::cout << "South";
-        break;
-      case 3:
-        std::cout << "West";
-        break;
-        }
-      std::cout << std::endl;
-    }
+      // for now...  an example of how to use the board print function
+      vector<struct command> d;
+      board.print();
+      findPath(board, d, max_moves);
 
+      for (int i = d.size() - 1; i >= 0; i--)
+        {
+          std::cout << d[i].robot << ":";
+          switch (d[i].dir)
+            {
+          case 0:
+            std::cout << "North";
+            break;
+          case 1:
+            std::cout << "East";
+            break;
+          case 2:
+            std::cout << "South";
+            break;
+          case 3:
+            std::cout << "West";
+            break;
+            }
+          std::cout << std::endl;
+        }
+    }
+  else
+    {
+      vector<vector<int> > itz;
+      getAccessibility(board, itz, max_moves, 0);
+      printAccessibility(itz);
+    }
 }
 void
-getAccessibility(const Board& f, vector<vector<unsigned int> > &h,
-    unsigned int maxdepth, unsigned int curdepth)
+getAccessibility(const Board& f, vector<vector<int> > &h, unsigned int maxdepth,
+    unsigned int curdepth)
 {
   //Initialize the vector to the correct size
   if (curdepth == 0)
@@ -247,15 +252,15 @@ getAccessibility(const Board& f, vector<vector<unsigned int> > &h,
       h.resize(f.getRows());
       for (unsigned int c = 0; c < f.getRows(); c++)
         {
-          h[c].resize(f.getCols());
+          h[c] = vector<int>(f.getCols(), std::numeric_limits<int>::max());
           //using a reference should reduce the number of calls to operator[] by about 2*n
-          vector<unsigned int> &reffy = h[c];
+          vector<int> &reffy = h[c];
           //initialize inner vector
           for (unsigned int g = 0; g < h[c].size(); g++)
-            reffy[g] = std::numeric_limits<unsigned int>::max();
+            reffy[g] = std::numeric_limits<int>::max();
         }
     }
-  if (curdepth < maxdepth)
+  if (curdepth <= maxdepth)
     {
 
       for (unsigned int g = 0; g < f.numRobots(); g++)
@@ -263,21 +268,49 @@ getAccessibility(const Board& f, vector<vector<unsigned int> > &h,
 
           for (unsigned short c = 0; c < 4; c++)
             {  //copy to a temporary variable
-              //needs to happen in order to explore the movement spaces of the robots properly
+               //needs to happen in order to explore the movement spaces of the robots properly
               Board temp = f;
-              if (temp.canMoveRobot(g, c))
+              Position curbot = temp.getRobotPosition(g);
+              if (h[curbot.row - 1][curbot.col - 1] > curdepth)
+                h[curbot.row - 1][curbot.col - 1] = curdepth;
+              if (temp.moveRobot(g, c))
                 {
-                  temp.moveRobot(g, c);
+
                   getAccessibility(temp, h, maxdepth, curdepth + 1);
-                  Position curbot = temp.getRobotPosition(g);
-                  //if the position is found with a smaller bot,
-                  if (h[curbot.row][curbot.col] > curdepth)
-                    h[curbot.row][curbot.col] = curdepth;
+                  //if the position is found with a smaller number of turns, then this is nice.
+
                 }
             }
         }
     }
+  else
+    {
 
+      for (vector<vector<int> >::iterator r = h.begin(); r != h.end(); r++)
+        {
+          for (vector<int>::iterator g = r->begin(); g != r->end(); g++)
+            if (*g == numeric_limits<int>::max())
+              *g = -1;
+        }
+    }
+
+}
+void
+printAccessibility(const vector<vector<int> > &y)
+{
+  for (unsigned int c = 0; c < y.size(); c++)
+    {
+      for (unsigned int d = 0; d < y[c].size(); d++)
+        {
+
+          cout.width(4);
+          if (y[c][d] >= 0)
+            cout << y[c][d] << " ";
+          else
+            cout << '.' << " ";
+        }
+      cout << endl;
+    }
 }
 // ================================================================
 // ================================================================

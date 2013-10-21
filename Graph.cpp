@@ -49,6 +49,14 @@ namespace white
       }
     return false;
   }
+  inline bool
+  operator<(const Node& a, const Node& b)
+  {
+    if (a.hash() < b.hash())
+      return true;
+    else
+      return false;
+  }
   Graph::Graph() :
       begin(NULL), robotgoal(-1)
   {
@@ -72,7 +80,9 @@ namespace white
   {
 
   }
-  void Graph::PopulateNodes(const Board& i,unsigned int depth){
+  void
+  Graph::PopulateNodes(const Board& i, unsigned int depth)
+  {
 
   }
 

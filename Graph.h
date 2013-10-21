@@ -12,7 +12,7 @@
 #include <cstring>
 #include <cstdlib>
 #include "muutil.h"
-#include "HashTable.h"
+#include <map>
 #include "Node.h"
 namespace white
 {
@@ -29,7 +29,7 @@ namespace white
      * Needs to be a list in order to prevent the pointers from all becoming invalid at once.
      */
     std::list<Node> nodes;
-    HashTable da;
+    std::map<unsigned int,Node*> sets;
     signed char robotgoal;
   public:
 

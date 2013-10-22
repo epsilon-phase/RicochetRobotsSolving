@@ -12,7 +12,7 @@
 #include <vector>
 #include <queue>
 #include <map>
-bool find_path_bfs(const Board&,int);
+bool find_path_bfs(const Board&,int,std::vector<command>&);
 
 
 

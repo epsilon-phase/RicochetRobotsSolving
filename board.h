@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include "command.h"
 #ifndef BOARD_H
 #define BOARD_H
 
@@ -39,7 +40,7 @@ operator!=(const Position &a, const Position &b);
 class Board
 {
 public:
-
+  friend command BuildPlausibleCommand(const Board&,const Board&);
   // CONSTRUCTOR
   Board(int num_rows, int num_cols);
 
@@ -124,6 +125,8 @@ public:
     return robot_positions;
   }
   bool canMoveRobot(unsigned int i, unsigned short direction)const;
+  void executeCommand(const command&);
+  Board executeCommand(const command&)const;
 private:
 
   // private helper functions

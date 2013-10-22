@@ -375,6 +375,13 @@ Board::canMoveRobot(unsigned int i, unsigned short direction) const
     return false;
     }
 }
+Board
+Board::executeCommand(const command& c) const
+{
+  Board f = this;
+  f.moveRobot(whichRobot(c.robot), c.dir);
+  return f;
+}
 //Simplifying the handling into a switch is nice.
 bool
 Board::moveRobot(int d, unsigned short dir)
@@ -474,6 +481,48 @@ Board::moveRobot(int d, unsigned short dir)
     }
 
   return moved;
+}
+void
+Board::executeCommand(const command &y)
+{
+  moveRobot(whichRobot(y.robot), y.dir);
+}
+//Find a command if possible to cause the transition from one state to another.
+command
+BuildPlausibleCommand(const Board& a, const Board& b)
+{
+  command command;
+  Board temp = a;
+  if (a.robot_positions.size() == b.robot_positions.size())
+    {
+      unsigned int single_difference = 0;
+      //count the number of positions difference, there must only be one.
+      for (int i = 0; i < a.robot_positions.size(); i++)
+        {
+          if (a.robot_positions[i] != b.robot_positions[i])
+            {
+              single_difference = i;
+              break;
+            }
+        }
+      //iterate through the directions to see what does what.
+      for (unsigned short i = 0; i < 4; i++)
+        {
+          //copy into a temporary variable for comparison.
+          temp = a;
+          temp.moveRobot(single_difference, i);
+          if (temp.robot_positions[single_difference]
+              == b.robot_positions[single_difference])
+            {
+              command = command(single_difference, i);
+              break;
+            }
+        }
+    }
+  for (int i = 0; i < a.robot_positions.size(); i++)
+    if (temp.robot_positions[i] == b.robot_positions[i])
+      throw("It doesn't work.");
+  return command;
 }
 // ==================================================================
 // ==================================================================

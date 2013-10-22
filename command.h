@@ -9,7 +9,11 @@
 #define COMMAND_H_
 struct command
 {
-
+  command()
+  {
+    robot = 0;
+    dir = 4;
+  }
   command(char c, unsigned short d) :
       robot(c), dir(d)
   {
@@ -17,7 +21,5 @@ struct command
   char robot;
   unsigned short dir;
 }typedef command;
-
-
 
 #endif /* COMMAND_H_ */

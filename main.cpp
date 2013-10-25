@@ -253,8 +253,16 @@ main(int argc, char* argv[])
                   board.print();
                 }
             }
-          cout << "robot " << d.back().robot << " reaches the goal after "
-              << mx - 1 << " moves" << endl;
+          cout << "robot ";
+          for (int i = 0; i < board.numRobots(); i++)
+            {
+              if (board.getRobotPosition(i) == board.getGoal())
+                {
+                  cout << board.getRobot(i);
+                  break;
+                }
+            }
+          cout << " reaches the goal after " << mx - 1 << " moves" << endl;
         }
       else
         {

@@ -35,6 +35,15 @@ namespace white
     return (b << 16) | a;
 
   }
+  Node::Node() :
+      color(false)
+  {
+  }
+  Node::Node(const Board& i) :
+      Robots(i.getRobots()), edges(), color(false)
+  {
+
+  }
   bool
   operator==(const Node& a, const Node& b)
   {
@@ -83,7 +92,47 @@ namespace white
   void
   Graph::PopulateNodes(const Board& i, unsigned int depth)
   {
+    Node n = Node(i);
+
+    //if it does not exist on the hashtable, then make sure to put it on the list and
+    //insert it to the hashtable
+    if (!sets.get(n))
+      {
+        nodes.push_back(n);
+        //pass it a reference to the node
+        sets.put(nodes.back());
+      }
+    if (depth > 0)
+      for (int c = 0; c < i.numRobots(); c++)
+        for (int d = 0; d < 4; d++)
+          {
+            Board tmp = i;
+            //if the robot can move in this direction,
+            if (tmp.moveRobot(c, d))
+              {
+                /***
+                 * create the element in the list and add the various thingies to the graph.
+                 * Also, Boom, Recursion!
+                 ***/
+                PopulateNodes(tmp, depth - 1);
+                //take the resulting board and get a pointer to the representative element
+                //made in the previous step
+                Node* tmpref = const_cast<Node*>(sets.get(Node(tmp)));
+                //check it to make sure that my bugs aren't showing
+                if (tmpref)
+                  {
+                    //and finally, push the reference onto the list of edges,
+
+                    //since we have shown that we can access it.
+                    n.edges.push_back(tmpref);
+                  }
+              }
+          }
 
   }
-
+  const std::list<Node>&
+  Graph::getNodes() const
+  {
+    return this->nodes;
+  }
 } /* namespace white */

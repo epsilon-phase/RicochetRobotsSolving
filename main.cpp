@@ -7,13 +7,14 @@
 #include "board.h"
 #include <limits>
 using namespace std;
-#include "pathfinding.h"
+
 #include "command.h"
 //TODO fix so that unconstrained max depth does not cause program to attempt to create an infinite path to the goal.
 
 //silly algorithm. Fails to find shortest path answer consistently.
 bool
-findPath(const Board &c, std::vector<command> &path, int depth)
+findPath(const Board &c, std::vector<command> &path, int depth,
+    const command &last = command())
 {
   //due to the algorithm's incorrect handling of infinite allowable depth,
   //I see no reason not to make a ridiculously high limit.
@@ -31,7 +32,7 @@ findPath(const Board &c, std::vector<command> &path, int depth)
       }
   else if (c.getRobotPosition(c.getGoalRobot()) == c.getGoal())
     return true;
-  if (depth != 0)
+  if (depth > 0)
     {
 
       for (unsigned int i = 0; i < c.numRobots(); i++)
@@ -39,14 +40,18 @@ findPath(const Board &c, std::vector<command> &path, int depth)
           for (unsigned short d = 0; d < 4; d++)
             {
               temp = c;
-
-              if (temp.moveRobot(i, d))
-                if (findPath(temp, path, depth - 1))
-                  {
+              //If the robot moves in one direction, it will never
+              //be able to move in the same direction twice consequently.
+              if (last.dir != d || last.robonum != i)
+                if (temp.moveRobot(i, d))
+                  if (findPath(temp, path, depth - 1,
+                      command(temp.getRobot(i), i, d)))
+                    {
 //                    temp.print();
-                    path.push_back(command(c.getRobot(i), d));
-                    return true;
-                  }
+                      path.push_back(command(c.getRobot(i), d));
+
+                      return true;
+                    }
 
             }
 
@@ -207,32 +212,54 @@ main(int argc, char* argv[])
   // YOUR CODE STARTS HERE
   //
   //
+
   if (!visualize_accessibility)
     {
       // for now...  an example of how to use the board print function
       vector<struct command> d;
       board.print();
-      findPath(board, d, max_moves);
-
-      for (int i = d.size() - 1; i >= 0; i--)
+      int mx;
+      //Try finding a shorter solution than specified, if only because the algorithm still lacks proper handling for the correct behavior.
+      for (mx = max_moves - 2; d.empty() && mx <= max_moves; mx++)
         {
-          std::cout << d[i].robot << ":";
-          switch (d[i].dir)
+          findPath(board, d, mx);
+        }
+      if (!d.empty())
+        {
+          for (int i = d.size() - 1; i >= 0; i--)
             {
-          case 0:
-            std::cout << "North";
-            break;
-          case 1:
-            std::cout << "East";
-            break;
-          case 2:
-            std::cout << "South";
-            break;
-          case 3:
-            std::cout << "West";
-            break;
+
+              std::cout << "Robot " << d[i].robot << " moves ";
+              switch (d[i].dir)
+                {
+              case 0:
+                std::cout << "north";
+                break;
+              case 1:
+                std::cout << "east";
+                break;
+              case 2:
+                std::cout << "south";
+                break;
+              case 3:
+                std::cout << "west";
+                break;
+                }
+              cout << endl;
+              if (!all_solutions)
+                {
+                  board.executeCommand(d[i]);
+
+                  board.print();
+                }
             }
-          std::cout << std::endl;
+          cout << "robot " << d.back().robot << " reaches the goal after "
+              << mx - 1 << " moves" << endl;
+        }
+      else
+        {
+          cout << "no solutions with " << max_moves << " or fewer moves"
+              << endl;
         }
     }
   else
@@ -241,6 +268,7 @@ main(int argc, char* argv[])
       getAccessibility(board, itz, max_moves, 0);
       printAccessibility(itz);
     }
+
 }
 void
 getAccessibility(const Board& f, vector<vector<int> > &h, unsigned int maxdepth,

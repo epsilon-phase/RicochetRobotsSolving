@@ -40,7 +40,8 @@ operator!=(const Position &a, const Position &b);
 class Board
 {
 public:
-  friend command BuildPlausibleCommand(const Board&,const Board&);
+  friend command
+  BuildPlausibleCommand(const Board&, const Board&);
   // CONSTRUCTOR
   Board(int num_rows, int num_cols);
 
@@ -120,13 +121,16 @@ public:
   void
   print();
   const std::vector<Position>&
-  getRobots()const
+  getRobots() const
   {
     return robot_positions;
   }
-  bool canMoveRobot(unsigned int i, unsigned short direction)const;
-  void executeCommand(const command&);
-  Board executeCommand(const command&)const;
+  bool
+  canMoveRobot(unsigned int i, unsigned short direction) const;
+  void
+  executeCommand(const command&);
+  Board
+  executeCommandToNewBoard(const command&) const;
 private:
 
   // private helper functions

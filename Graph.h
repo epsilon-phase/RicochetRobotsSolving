@@ -12,8 +12,9 @@
 #include <cstring>
 #include <cstdlib>
 #include "muutil.h"
-#include <map>
+#include "HashTable.h"
 #include "Node.h"
+
 namespace white
 {
 
@@ -29,8 +30,11 @@ namespace white
      * Needs to be a list in order to prevent the pointers from all becoming invalid at once.
      */
     std::list<Node> nodes;
-    std::map<unsigned int,Node*> sets;
-    signed char robotgoal;
+    /**
+     * Custom hashtable for speed
+     */
+    HashTable sets;
+    unsigned char robotgoal;
   public:
 
     void
@@ -42,6 +46,7 @@ namespace white
     Graph();
     virtual
     ~Graph();
+    const std::list<Node>& getNodes()const;
   };
 
 } /* namespace white */

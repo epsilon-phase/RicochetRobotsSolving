@@ -18,7 +18,7 @@ own, as described in "Academic Integrity for Homework" handout.
 
 
 
-ESTIMATE OF # OF HOURS SPENT ON THIS ASSIGNMENT:  < insert # hours >
+ESTIMATE OF # OF HOURS SPENT ON THIS ASSIGNMENT: 20
 
 
 
@@ -30,11 +30,14 @@ i & j = dimensions of the board
     w = number of interior walls
     m = maximum total number of moves allowed
 
-
+moveRobot: O(i+j+w+r)
+findPath:O(r*(i+j+w+r)*m)
+findAccessibility(
 
 
 SUMMARY OF PERFORMANCE OF YOUR PROGRAM ON THE PROVIDED PUZZLES:
-
+Most puzzles are solved in relatively short times, usually less than one second, however, the program does not find the shortest path available to it, and therefore fails the tests.
+Also, I need
 
 
 MISC. COMMENTS TO GRADER:  

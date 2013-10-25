@@ -14,13 +14,14 @@ namespace white
   class Node
   {
   public:
-    friend class Board;
     std::vector<Position> Robots;
     std::vector<Node*> edges;
     bool color;
     //this is going to be a long function
     unsigned int
     hash() const;
+    Node(const Board&);
+    Node();
   };
   bool
   operator==(const Node& a, const Node& b);

@@ -61,7 +61,7 @@ namespace white
     const white::Node*
     get(const Node&) const;
     /**
-     * Increases the size to size*expansion
+     * Increases the size to size*expansionfactor
      */
     void
     resize();

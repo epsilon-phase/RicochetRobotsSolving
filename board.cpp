@@ -376,9 +376,9 @@ Board::canMoveRobot(unsigned int i, unsigned short direction) const
     }
 }
 Board
-Board::executeCommand(const command& c) const
+Board::executeCommandToNewBoard(const command& c) const
 {
-  Board f = this;
+  Board f = *this;
   f.moveRobot(whichRobot(c.robot), c.dir);
   return f;
 }
@@ -514,7 +514,8 @@ BuildPlausibleCommand(const Board& a, const Board& b)
           if (temp.robot_positions[single_difference]
               == b.robot_positions[single_difference])
             {
-              command = command(single_difference, i);
+              command.robot = a.robots[single_difference];
+              command.dir = i;
               break;
             }
         }

@@ -9,10 +9,13 @@
 #define PATHFINDING_H_
 #include "board.h"
 #include "command.h"
+#include "Graph.h"
 #include <vector>
 #include <queue>
 #include <map>
-bool find_path_bfs(const Board&,int,std::vector<command>&);
+namespace white{
+  std::queue<command> find_path_bfs(const Graph&);
+};
 
 
 

@@ -18,8 +18,13 @@ struct command
       robot(c), dir(d)
   {
   }
+  command(char c, unsigned short r, unsigned short d) :
+      robot(c), robonum(r), dir(d)
+  {
+  }
   char robot;
   unsigned short dir;
+  unsigned short robonum;
 }typedef command;
 
 #endif /* COMMAND_H_ */
